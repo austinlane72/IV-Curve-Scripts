@@ -20,8 +20,12 @@ function IV_Curve_Plot_Saver_Par()
     
     % Create a dedicated subfolder for this specific data file's plots
     mainSavePath = fullfile(savePath, [dataFileName '_Plots']);
-    if ~exist(mainSavePath, 'dir')
-        mkdir(mainSavePath); 
+   if ~exist(mainSavePath, 'dir')
+        [status, msg] = mkdir(mainSavePath); 
+        if ~status
+            error('PlotSaver:DirectoryError', ['Failed to create main save ' ...
+                'directory. Ensure you have write permissions.\nPath: %s\nReason: %s'], mainSavePath, msg);
+        end
     end
     fprintf('Plots will be saved to: %s\n', mainSavePath);
     

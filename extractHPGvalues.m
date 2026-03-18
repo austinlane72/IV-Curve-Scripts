@@ -32,6 +32,7 @@ function M = extractHPGvalues(folderPath)
 
     % 4) Main loop: read 10 lines with needed values
     rowIdx = 0;
+    tmp = cell(nLines,1);
     for fileIDx = 1:nFiles
         fn = fullfile(folderPath, names{fileIDx});
         fid = fopen(fn,'r');
@@ -39,16 +40,15 @@ function M = extractHPGvalues(folderPath)
         
         % Skip first 11 header lines
         for headerLineIdx = 1:11, fgetl(fid); end
-        tmp = cell(10,1);
         % Read lines 12-21
-        for dataLineIdx = 1:10, tmp{dataLineIdx} = fgetl(fid); end
+        for dataLineIdx = 1:nLines, tmp{dataLineIdx} = fgetl(fid); end
         fclose(fid);
         
         block = string(tmp);
         % Pull tokens for each of the 10 lines
         tokens = regexp(block, tokenPattern, 'tokens');
 
-        for lineIdx = 1:10
+        for lineIdx = 1:nLines
             if lineIdx > numel(tokens) || isempty(tokens{lineIdx}), continue; end
             
             T = tokens{lineIdx};

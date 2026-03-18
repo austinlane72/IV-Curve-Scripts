@@ -118,7 +118,11 @@ function generatePlotBatch(ax, data, mainGroupCol, subGroupCol, configs, tType, 
         % Create the specific subfolder for this group
         saveDir = fullfile(baseDir, safeName);
         if ~exist(saveDir, 'dir')
-            mkdir(saveDir); 
+            [status, msg] = mkdir(saveDir); 
+            if ~status
+                warning('Failed to create sub-directory %s. Reason: %s', saveDir, msg);
+                continue; % Skip this group if we can't save to it
+            end
         end
         
         % Format the base title and filename
