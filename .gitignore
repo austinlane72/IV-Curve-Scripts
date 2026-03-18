@@ -1,0 +1,46 @@
+# MATLAB files
+*.mat
+*.fig
+*.mex*
+*.p
+*.prj
+*.mltbx
+*.mlapp
+*.mlappinstall
+*.mlpkginstall
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# MATLAB specific
+*.slx
+*.sldx
+*.mldatx
+*.mlconf
+*.mlproj
+*.mlprojuser
+*.slproj
+*.slprojuser
+*.slxdoc
+*.slxdocx
+*.slxdocm
+*.slxdocb
+*.slxdocz
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
