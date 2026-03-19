@@ -14,84 +14,50 @@ function IV_Curve_HPG_Importer()
     % 2) Process based on user's choice
     switch importMode
         case 'All Devices (from top-level folder)'
-            % 2a) Import all devices
-            
-            % Ask user to select the parent folder containing all device folders
             parentFolder = uigetdir('', 'Select the Top-Level "Devices" Folder');
             if parentFolder == 0, disp('Canceled.'); return; end % Exit if user hits cancel
             
-            % Get the name of the selected folder for the output file
-            [~, parentFolderName] = fileparts(parentFolder);
-
-            % Get a list of all subfolders (e.g., 'Device_A', 'Device_B')
+            [~, folderName] = fileparts(parentFolder);
             deviceFolders = getSubFolders(parentFolder);
 
-            % Initialize an empty table to hold all combined data
-            masterTable = table();
-            
-            % Loop through each device folder found
-            for i = 1:length(deviceFolders)
-                deviceName = deviceFolders(i).name;
-                devicePath = fullfile(parentFolder, deviceName);
-                fprintf('--- Processing Device: %s ---\n', deviceName);
-                
-                % Use a try/catch block for overall robustness.
-                % The 'processDevice' function has its own internal error handling,
-                % so this will only catch more severe, unexpected errors.
-                try
-                    % Call the local helper function to process this one device
-                    deviceTable = processDevice(devicePath, deviceName);
-                    % Append this device's data to the master table
-                    masterTable = [masterTable; deviceTable];
-                catch ME
-                    warning('Failed to process device %s: %s', deviceName, ME.message);
-                end
-            end
-            
-            % After processing all devices, save the final master table
-            if ~isempty(masterTable)
-                % Create a "safe" file name from the parent folder's name
-                safeParentName = matlab.lang.makeValidName(replace(parentFolderName, ' ', '_'));
-                saveFile = [safeParentName '_Data.mat'];
-                save(saveFile, 'masterTable');
-                fprintf('\nSuccess! All data saved to %s (in current working directory).\n', saveFile);
-            else
-                disp('No data was processed.');
-            end
-
         case 'A Single Device'
-            % 2b) Import a single device
-            
-            % Ask user to select the specific device folder
             devicePath = uigetdir('', 'Select a Single Device Folder');
             if devicePath == 0, disp('Canceled.'); return; end % Exit if user hits cancel
             
-            % Get the device name from the folder path
-            [~, deviceName] = fileparts(devicePath);
-            fprintf('--- Processing Device: %s ---\n', deviceName);
-            
-            try
-                % Call the same local helper function to process this device
-                masterTable = processDevice(devicePath, deviceName);
-                
-                % Save the data for just this device
-                if ~isempty(masterTable)
-                    % Create a "safe" file name (e.g., 'Device A' -> 'Device_A_Data.mat')
-                    safeDeviceName = matlab.lang.makeValidName(replace(deviceName, ' ', '_'));
-                    saveFile = [safeDeviceName '_Data.mat'];
-                    % Save to the current directory
-                    save(saveFile, 'masterTable');
-                    fprintf('\nSuccess! Data saved to %s (in current working directory).\n', saveFile);
-                else
-                    disp('No data was processed for this device.');
-                end
-            catch ME
-                warning('Failed to process device %s: %s', deviceName, ME.message);
-            end
+            [parentFolder, deviceName] = fileparts(devicePath);
+            deviceFolders = struct('name', deviceName);
+            folderName = deviceName;
 
         case 'Cancel'
-            % 2c) User cancelled
             disp('Import canceled.');
+            return;
+    end
+
+    % Initialize an empty table to hold all combined data
+    masterTable = table();
+    
+    % Loop through each device folder found
+    for i = 1:length(deviceFolders)
+        deviceName = deviceFolders(i).name;
+        devicePath = fullfile(parentFolder, deviceName);
+        fprintf('--- Processing Device: %s ---\n', deviceName);
+        
+        try
+            deviceTable = processDevice(devicePath, deviceName);
+            masterTable = [masterTable; deviceTable];
+        catch ME
+            warning('Failed to process device %s: %s', deviceName, ME.message);
+        end
+    end
+    
+    % After processing all devices, save the final master table
+    if ~isempty(masterTable)
+        safeName = matlab.lang.makeValidName(replace(folderName, ' ', '_'));
+        saveFile = [safeName '_Data.mat'];
+        save(saveFile, 'masterTable');
+        fprintf('\nSuccess! All data saved to %s (in current working directory).\n', saveFile);
+    else
+        disp('No data was processed.');
     end
 end
 

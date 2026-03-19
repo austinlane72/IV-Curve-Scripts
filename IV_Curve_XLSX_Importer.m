@@ -14,12 +14,10 @@ function IV_Curve_XLSX_Importer()
     % 2) Execute based on user choice
     switch importMode
         case 'All Devices (from top-level folder)'
-            
-            % Get the master folder containing all device subfolders
             parentFolder = uigetdir('', 'Select the Top-Level "Devices" Folder');
             if parentFolder == 0, disp('Import Canceled.'); return; end 
             
-            [~, parentFolderName] = fileparts(parentFolder);
+            [~, folderName] = fileparts(parentFolder);
             deviceFolders = getSubFolders(parentFolder);
             
             if isempty(deviceFolders)
@@ -27,69 +25,50 @@ function IV_Curve_XLSX_Importer()
                 return;
             end
             
-            % Preallocate a cell array
-            numDevices = length(deviceFolders);
-            masterCell = cell(numDevices, 1);
-            
-            % Loop through each device folder
-            for i = 1:numDevices
-                deviceName = deviceFolders(i).name;
-                devicePath = fullfile(parentFolder, deviceName);
-                
-                fprintf('--- Processing Device: %s ---\n', deviceName);
-                
-                try
-                    % Process the device and store its table in the cell array
-                    masterCell{i} = processDeviceXLSX(devicePath, deviceName);
-                catch ME
-                    warning('Failed to process device %s: %s', deviceName, ME.message);
-                end
-            end
-            
-            % Remove any empty cells (in case a device failed or had no data)
-            masterCell = masterCell(~cellfun('isempty', masterCell));
-            
-            % Combine all data and save
-            if ~isempty(masterCell)
-                masterTable = vertcat(masterCell{:}); % Combine into one table
-                saveFileName = [matlab.lang.makeValidName(parentFolderName), '_Data.mat'];
-                save(saveFileName, 'masterTable');
-                fprintf('\nSuccess! All data saved to %s (in current working directory).\n', saveFileName);
-            else
-                disp('No data was successfully processed.');
-            end
-
         case 'A Single Device'
-            
-            % Get the specific device folder
             devicePath = uigetdir('', 'Select a Single Device Folder');
             if devicePath == 0, disp('Import Canceled.'); return; end 
             
-            [~, deviceName] = fileparts(devicePath);
-            fprintf('--- Processing Device: %s ---\n', deviceName);
-            
-            try
-                masterTable = processDeviceXLSX(devicePath, deviceName);
-                
-                if ~isempty(masterTable)
-                    saveFileName = [matlab.lang.makeValidName(deviceName), '_Data.mat'];
-                    save(saveFileName, 'masterTable');
-                    fprintf('\nSuccess! Data saved to %s (in current working directory).\n', saveFileName);
-                else
-                    disp('No data was processed for this device.');
-                end
-            catch ME
-                warning('Failed to process device %s: %s', deviceName, ME.message);
-            end
+            [parentFolder, deviceName] = fileparts(devicePath);
+            deviceFolders = struct('name', deviceName);
+            folderName = deviceName;
 
         case 'Cancel'
             disp('Import canceled.');
+            return;
+    end
+
+    % Preallocate a cell array
+    numDevices = length(deviceFolders);
+    masterCell = cell(numDevices, 1);
+    
+    % Loop through each device folder
+    for i = 1:numDevices
+        deviceName = deviceFolders(i).name;
+        devicePath = fullfile(parentFolder, deviceName);
+        
+        fprintf('--- Processing Device: %s ---\n', deviceName);
+        
+        try
+            masterCell{i} = processDeviceXLSX(devicePath, deviceName);
+        catch ME
+            warning('Failed to process device %s: %s', deviceName, ME.message);
+        end
+    end
+    
+    % Remove any empty cells (in case a device failed or had no data)
+    masterCell = masterCell(~cellfun('isempty', masterCell));
+    
+    % Combine all data and save
+    if ~isempty(masterCell)
+        masterTable = vertcat(masterCell{:}); % Combine into one table
+        saveFileName = [matlab.lang.makeValidName(folderName), '_Data.mat'];
+        save(saveFileName, 'masterTable');
+        fprintf('\nSuccess! All data saved to %s (in current working directory).\n', saveFileName);
+    else
+        disp('No data was successfully processed.');
     end
 end
-
-% =========================================================================
-% Helper Functions
-% =========================================================================
 
 function deviceTable = processDeviceXLSX(devicePath, deviceName)
     % processDeviceXLSX: Extracts data from 'Output' and 'Transfer' folders
