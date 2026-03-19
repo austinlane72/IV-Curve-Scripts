@@ -1,8 +1,10 @@
 function IV_Curve_Plotter()
-    % IV_Curve_Plotter: generates plots to the user's preference from a
-    % .mat table.
+    % IV_Curve_Plotter: Interactively generates plots from a .mat table.
+    % Allows the user to load a consolidated data file, select a test type 
+    % (Output/Transfer), and visually compare specific devices or parameters
+    % within the MATLAB figure window.
     
-    % 1) Load data
+    % 1) Load Data
     [file, path] = uigetfile('*.mat', 'Select a MAT file to plot (e.g., device_data.mat)');
     if file == 0, disp('Canceled.'); return; end
     
@@ -128,10 +130,18 @@ end
 
 function createPlot(loopItems, dataSelector, p, ...
                     xLabelStr, xLabelShortStr, titleSuffix, yScale)
-% createPlot: A generalized function to create one plot.
-% 'p' is a struct containing .yFunc, .yLabel, and .yTitle
-%
-% Style settings:
+    % createPlot: A generalized function to create a single plot with multiple lines.
+    %
+    % Inputs:
+    %   loopItems      - Array of unique items (devices or params) to iterate over
+    %   dataSelector   - Function handle to filter data for a specific item
+    %   p              - Struct of plot configs (.yFunc, .yLabel, .yTitle)
+    %   xLabelStr      - String for the full X-axis label
+    %   xLabelShortStr - Shortened string for the X-axis variable in the title
+    %   titleSuffix    - String appended to the end of the plot title
+    %   yScale         - Scale of the Y-axis ('linear' or 'log')
+
+    % Style settings
     plotFontSize = 20;
     plotLineWidth = 2.0;
     plotFontName = 'Arial';

@@ -1,11 +1,17 @@
 function M = extractHPGvalues(folderPath)
-% extractHPGvalues  Read lines 12–21 from each .hpg, parse the three
-% (<number><unit>) tokens per line, convert via unitFactors (to μA & V),
-% and return a (10·nFiles)×3 matrix with duplicates removed.
-%
-%   M(:,1) = voltages [V]
-%   M(:,2) = currents [μA]
-%   M(:,3) = leak-currents [μA]
+    % extractHPGvalues: Extracts voltage and current values from .hpg files.
+    % Reads lines 12–21 from each .hpg file in the specified folder, parses the 
+    % three (<number><unit>) tokens per line, converts via unitFactors (to μA & V),
+    % and returns a matrix with duplicates removed.
+    %
+    % Inputs:
+    %   folderPath - Directory containing .hpg files (defaults to pwd if omitted)
+    %
+    % Outputs:
+    %   M - A (10*nFiles)x3 numeric matrix where:
+    %       M(:,1) = voltages [V]
+    %       M(:,2) = currents [μA]
+    %       M(:,3) = leak-currents [μA]
 
     % 0) If folderPath is omitted, uses pwd.
     if nargin<1, folderPath = pwd; end

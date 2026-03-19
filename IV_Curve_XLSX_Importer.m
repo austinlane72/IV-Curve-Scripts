@@ -1,8 +1,11 @@
 function IV_Curve_XLSX_Importer()
     % IV_Curve_XLSX_Importer: Imports IV curve data from .xlsx files.
-    % Asks user which xlsx file(s) to import if multiple are in a
-    % folder
-    % The final data is saved as a '.mat' file in the current working directory.
+    % Prompts the user to select either a single device folder or a top-level
+    % folder containing multiple devices. The script extracts data from 'Output' 
+    % and 'Transfer' subfolders and saves the combined data as a single '.mat' 
+    % file in the current working directory.
+    %
+    % Requirements: MATLAB R2019a or newer (for readmatrix and string arrays).
     
     % 1) Ask the user what they want to do
     importMode = questdlg('What do you want to import?', ...
@@ -71,7 +74,14 @@ function IV_Curve_XLSX_Importer()
 end
 
 function deviceTable = processDeviceXLSX(devicePath, deviceName)
-    % processDeviceXLSX: Extracts data from 'Output' and 'Transfer' folders
+    % processDeviceXLSX: Extracts data from 'Output' and 'Transfer' folders.
+    %
+    % Inputs:
+    %   devicePath - Full directory path to the specific device folder
+    %   deviceName - Name of the device (used for tagging data rows)
+    %
+    % Outputs:
+    %   deviceTable - A consolidated table containing data from all valid tests
     
     % --- Configuration ---
     XLSX_DATA_START_RANGE = 'A120';

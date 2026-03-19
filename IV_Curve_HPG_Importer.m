@@ -1,7 +1,10 @@
 function IV_Curve_HPG_Importer()
     % IV_Curve_HPG_Importer: Imports IV curve data from .hpg files.
+    % Prompts the user to select either a single device folder or a top-level
+    % folder containing multiple devices. The script parses nested parameter 
+    % folders and saves the combined data as a single '.mat' file.
+    %
     % Requires: getSubFolders, extractHPGvalues
-    % The final data is saved as a '.mat' file in the current working directory.
     
     % 1) Ask user for import mode
     % Create a dialog box to ask the user what they want to do.

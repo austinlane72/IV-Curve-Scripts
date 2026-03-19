@@ -1,7 +1,10 @@
 function IV_Curve_Plot_Saver_Par()
     % IV_Curve_Plot_Saver_Par: Generates and saves plots from a .mat table in parallel.
-    % Use for >100 plots
-    % Requires: Parallel Computing Toolbox
+    % Automatically batches and saves all plot combinations (by device and 
+    % by parameter) as .png files. Designed for processing
+    % large datasets (>100 plots) using multiple CPU cores.
+    %
+    % Requirements: Parallel Computing Toolbox
     
     % 1) Load data
     % Prompt the user to select the .mat file containing the data
@@ -93,13 +96,21 @@ function IV_Curve_Plot_Saver_Par()
     fprintf(' All plots successfully saved inside:\n %s\n', mainSavePath);
 end
 
-% =========================================================
-% HELPER FUNCTION: generatePlotBatch (MULTITHREADED)
-% =========================================================
-% This function handles the repetitive work: identifying groups, creating 
-% folders, formatting titles/filenames, looping through configs, and saving.
 function generatePlotBatch(data, mainGroupCol, subGroupCol, configs, tType, xLbl, baseDir, titleFmt, fileFmt)
-    
+    % generatePlotBatch: Handles the repetitive work: identifying groups, creating 
+    % folders, formatting titles/filenames, looping through configs, and saving images.
+    %
+    % Inputs:
+    %   data         - Filtered table containing the data to plot
+    %   mainGroupCol - Column name to group by for folders (e.g., 'DeviceName')
+    %   subGroupCol  - Column name to group by for lines (e.g., 'Parameter')
+    %   configs      - Cell array of plot configurations
+    %   tType        - String specifying the test type ('Output' or 'Transfer')
+    %   xLbl         - String for the X-axis label
+    %   baseDir      - Directory path to save the generated folders/plots
+    %   titleFmt     - Format string for the plot title
+    %   fileFmt      - Format string for the saved filename
+
     % Find all unique items in the main grouping column (e.g., all Devices)
     mainGroups = unique(data.(mainGroupCol));
     totalGroups = numel(mainGroups);
