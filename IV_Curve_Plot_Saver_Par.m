@@ -115,11 +115,18 @@ function generatePlotBatch(data, mainGroupCol, subGroupCol, configs, tType, xLbl
     mainGroups = unique(data.(mainGroupCol));
     totalGroups = numel(mainGroups);
     
+    % Pre-slice the data into a cell array to prevent broadcasting the entire 
+    % table to every parallel worker (resolves the 'data' broadcast warning).
+    slicedData = cell(totalGroups, 1);
+    for i = 1:totalGroups
+        slicedData{i} = data(data.(mainGroupCol) == string(mainGroups(i)), :);
+    end
+    
     % Parfor Loop: Distributes the distinct groups across CPU cores
     parfor i = 1:totalGroups
         mainVal = string(mainGroups(i));
         
-        groupData = data(data.(mainGroupCol) == mainVal, :);
+        groupData = slicedData{i};
         if isempty(groupData), continue; end
         
         % In a parfor loop, execution is asynchronous. We just print the name.
@@ -143,7 +150,7 @@ function generatePlotBatch(data, mainGroupCol, subGroupCol, configs, tType, xLbl
         
         % Create figure inside worker
         workerFig = figure('Visible', 'off', 'Units', 'Inches', 'Position', [1 1 8 6]);
-        workerAx = axes(workerFig);
+        workerAx = axes('Parent', workerFig);
         
         for c = 1:size(configs, 1)
             % Extract config variables specifically for parfor indexing rules
