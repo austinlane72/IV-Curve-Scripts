@@ -36,25 +36,29 @@ function IV_Curve_HPG_Importer()
             return;
     end
 
-    % Initialize an empty table to hold all combined data
-    masterTable = table();
+    % Preallocate a cell array to hold data for each device
+    numDevices = length(deviceFolders);
+    masterCell = cell(numDevices, 1);
     
     % Loop through each device folder found
-    for i = 1:length(deviceFolders)
+    for i = 1:numDevices
         deviceName = deviceFolders(i).name;
         devicePath = fullfile(parentFolder, deviceName);
         fprintf('--- Processing Device: %s ---\n', deviceName);
         
         try
-            deviceTable = processDevice(devicePath, deviceName);
-            masterTable = [masterTable; deviceTable];
+            masterCell{i} = processDevice(devicePath, deviceName);
         catch ME
             warning('Failed to process device %s: %s', deviceName, ME.message);
         end
     end
     
+    % Remove any empty cells (in case a device failed or had no data)
+    masterCell = masterCell(~cellfun('isempty', masterCell));
+
     % After processing all devices, save the final master table
-    if ~isempty(masterTable)
+    if ~isempty(masterCell)
+        masterTable = vertcat(masterCell{:}); % Combine into one table efficiently
         safeName = matlab.lang.makeValidName(replace(folderName, ' ', '_'));
         saveFile = [safeName '_Data.mat'];
         save(saveFile, 'masterTable');
@@ -76,8 +80,8 @@ function deviceTable = processDevice(devicePath, deviceName)
     %   deviceTable - A table containing all data (V, ID, IG) and metadata
     %                 (DeviceName, TestType, Parameter) for this one device.
 
-    % Initialize an empty table for this specific device
-    deviceTable = table();
+    % Preallocate cell array to hold data
+    collectedData = {}; 
     % Define the test types to look for
     testTypes = {'Output', 'Transfer'};
     
@@ -128,8 +132,8 @@ function deviceTable = processDevice(devicePath, deviceName)
                     fileData.TestType = repmat(string(testType), height(fileData), 1);
                     fileData.Parameter = repmat(string(safeParamName), height(fileData), 1);
                     
-                    % Append this parameter's data to the device's table
-                    deviceTable = [deviceTable; fileData];
+                    % Store the finished table in our cell array
+                    collectedData{end+1} = fileData; %#ok<AGROW> 
                 end
             catch ME
                 % If 'extractHPGvalues' failed for this folder, warn the user
@@ -138,5 +142,12 @@ function deviceTable = processDevice(devicePath, deviceName)
                 fprintf('    ...skipping this parameter and continuing.\n');
             end
         end
+    end
+    
+    % Finalize Device Table
+    if ~isempty(collectedData)
+        deviceTable = vertcat(collectedData{:}); % Combine all files efficiently
+    else
+        deviceTable = table(); % Return empty table if nothing was found
     end
 end
