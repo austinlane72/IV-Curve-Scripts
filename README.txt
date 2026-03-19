@@ -1,4 +1,4 @@
-﻿MATLAB TFT DATA ANALYSIS TOOLKIT
+MATLAB TFT DATA ANALYSIS TOOLKIT
 This collection of MATLAB scripts provides a workflow for importing, visualizing, and batch-processing Thin-Film Transistor (TFT) IV curve data from two different data formats (.hpg or .xlsx).
 
 CORE WORKFLOW
@@ -7,7 +7,8 @@ The workflow is a two-step process:
 1. Import Data:
    Use one of the Importer scripts to parse your raw data folders. This will consolidate all measurements into a single .mat file (e.g., My_Experiment_Data.mat) containing a masterTable.
    * IV_Curve_HPG_Importer.m (for .hpg files from HP 4145B)
-   * IV_Curve_XLSX_Importer.m (for .xlsx files from Keysight B2902B)
+   * IV_Curve_XLSX_Importer.m (for .xlsx files from Keysight B2902B) 
+    * Note the data start cell and replace XLSX_DATA_START_RANGE if necessary
 
 2. Plot Data:
    Use the generated .mat file as the input for the plotting scripts.
